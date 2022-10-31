@@ -1,0 +1,85 @@
+==============================================================================
+Scannerless Boolean Parser
+
+Adam Megacz <megacz@cs.berkeley.edu>
+updated 27-May-2007
+
+______________________________________________________________________________
+Requirements
+
+  Java 1.5.0
+
+  The core grammar structures will always require generics (and thus
+  Java 1.5 to compile and probably at least that version in order to
+  run, although there are some hacks out there that might make it
+  possible to execute the compiled bytecode on Java 1.2+).
+
+  Being able to run a "precompiled" parser for a fixed grammar on any
+  jdk1.1+ JVM is a very high priority for the near future.
+
+
+______________________________________________________________________________
+Makefile targets
+
+  make edu.berkeley.sbp.jar   -- compile the code
+  make test                   -- run regression tests
+  make javadoc                -- generate javadoc in doc/api/
+  make boot                   -- bootstrap the metagrammar by compiling tests/meta.g
+                                 into src/edu/berkeley/sbp/misc/MetaGrammar.java
+
+______________________________________________________________________________
+Browsing the code
+
+  Rule #1: the JavaDoc is your friend
+  Rule #2: the JavaDoc IS YOUR FRIEND
+
+  I've put substantially more effort into the public methods and their
+  corresponding javadoc comments than anything else.  The generated
+  javadoc is by far your best bet at getting up to speed quickly.
+  Specifically, read the "long form" package comment for
+  edu.berkeley.sbp, which gets placed at the bottom of this:
+
+     doc/api/edu/berkeley/sbp/package-summary.html
+
+  README                       -- this file
+  TODO                         -- stuff to do in the future
+  src/
+      edu/
+          berkeley/
+                   sbp/        -- core API: grammar, trees, and forests
+                       misc    -- regression testing and sample code
+                       util    -- some nifty data structures not specific to parsing
+                       meta    -- code relating to the metagrammar (meta.g)
+                       chr     -- code for parsing character streams (you want this)
+  doc/
+      jargon.txt               -- read this!
+      api/                     -- generated javadocs go here
+  tests/
+        meta.g                 -- the tentative metagrammar, written in itself
+        testcase.g             -- the grammar for testcases (extends meta.g)
+        regression.tc          -- some test cases (formatted according to testcase.g)
+
+
+______________________________________________________________________________
+Using the code
+
+  The public methods in edu.berkeley.sbp.* are considered very stable;
+  they are highly unlikely to change in future releases.  Everything
+  else should be considered at-your-own-risk, especially non-public
+  (ie package/private/protected methods).
+
+  Currently I would not recommend extending any of the subclasses of
+  Element.
+
+  What I call the "tentative metagrammar" (meta.g) is definately going
+  to change at least somewhat in the near future, although I doubt it
+  would be anything drastic enough to require more than a few minutes
+  to update a grammar description.
+
+
+______________________________________________________________________________
+Haskell Integration
+
+  If you're using LambdaVM (the Java backend for GHC), you'll be able
+  to use SBP in your Haskell code.  See src/SBP.lhs for more info.
+

@@ -1,0 +1,12 @@
+package foo;
+import foo.bar;
+
+public class Baz < A extends Object , Q super Foo<Bar<Baz>,Bop> > {
+
+  public void foo(int x, char y,Bop<Baz<M> q) {
+  }
+
+  protected abstract int bar(int c);
+  protected abstract int bop( );
+
+}

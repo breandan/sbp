@@ -1,0 +1,518 @@
+testcase "pathological O(n^2) behavior" {
+  input "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+  output "x";
+          s = x:: ManyA!
+     ManyA =  ()
+            | x:: A ManyA
+          A = ()! ("a" & ManyAB)
+    ManyAB = ()
+            | "a" ManyAB
+            | "b" ManyAB
+
+}
+
+testcase "another O(n^2) example, tickles different epsilon behaviors" {
+  input "aaaa";
+  output "x:{x:{x:{x}}}";
+  s = x:: s A! | ()
+  A = "a" & B
+  B = () | B "a"
+}
+
+testcase "unnamed" {
+    input "aaaaa";
+    s = A
+    A = "a" s &~ "a" A
+      | "a" A &~ "a" s
+}
+
+testcase "unnamed" {
+    input "ab c";
+    output "1:{{a b} {c}}";
+
+    s     = ids
+    ids   = "1":: id (" " ids &~ id ("":: ~[]*))
+          | "2":: id (    ids &~ id ("":: ~[]*))
+          | id
+    id    = "":: [a-z]++
+}
+
+testcase "unnamed" {
+    input "ab c";
+
+    output "2:{{a} 1:{{b} {c}}}";
+    output "1:{{a b} {c}}";
+
+    s     = ids
+    ids   = "1":: id " " ids
+          | "2":: id     ids
+          | id
+    id    = "":: [a-z]+
+}
+
+testcase "unnamed" {
+    input "aaabbbccc";
+    output "ab";
+
+    s     = ab & dc
+    ab    = ab:: a b
+    dc    = dc:: d c
+    a     = "a" a     | ()
+    b     = "b" b "c" | ()
+    c     = "c" c     | ()
+    d     = "a" d "b" | ()
+}
+
+testcase "unnamed" {
+    input "aaabbbbccc";
+
+    s     = ab & dc
+    ab    = ab:: a b
+    dc    = dc:: d c
+    a     = "a" a     | ()
+    b     = "b" b "c" | ()
+    c     = "c" c     | ()
+    d     = "a" d "b" | ()
+}
+
+testcase "unnamed" {
+    input "aabb";
+    output "xbx:{{a} abab:{a b} {b}}";
+
+    x     = ~[]
+    s     = xbx:: ("":: x*) b ("":: x*)
+    b     = abab:: [ab][ab]
+         &~ ("aa"|"bb")
+}
+
+testcase "unnamed" {
+    input  "qxbambambam";
+    output "bam:{a bam:{a bam:{a x}}}";
+
+    s   = "q" z
+    z   = a z ^"bam"
+        | ^"x"
+    a   = a:: ()
+}
+
+testcase "unnamed" {
+    input  "baaaa";
+    output "s2:{b0 a:{a:{epsilon}}}";
+    output "b:{a:{a:{epsilon}} epsilon}";
+    s   = s2:: b t
+        | ^"b" t b
+    t   = ^"a" t "a"
+        | epsilon:: ()
+    b   = b0:: "b"
+        | epsilon:: ()
+}
+
+testcase "qaq" {
+    input  "qaq";
+    output "q:{a:{s1}}";
+
+    s   = ^"q" x "q"
+    x   = ^"a" a
+        | epsilon:: ()
+    a   = s1:: x
+}
+
+testcase "unnamed" {
+    input "baa";
+    output "s1:{a2:{a2:{a0 b0} b0}}";
+
+    s   = s1:: "b" a
+    a   = a2:: "a" a b
+        | a0:: ()
+    b   = b0:: ()
+}
+
+testcase "epsilon forests" {
+    input  "aaa";
+
+    output "s3:{s3:{epsilon a0 epsilon epsilon} epsilon epsilon epsilon}";
+    output "s3:{s3:{epsilon epsilon epsilon epsilon} a0 epsilon epsilon}";
+    output "s3:{s3:{epsilon epsilon a0 epsilon} epsilon epsilon epsilon}";
+    output "s3:{s3:{epsilon epsilon epsilon a0} epsilon epsilon epsilon}";
+    output "s3:{epsilon epsilon a0 a0}";
+    output "s3:{s3:{s3:{epsilon epsilon epsilon epsilon} epsilon epsilon epsilon} epsilon epsilon epsilon}";
+    output "s3:{s3:{epsilon epsilon epsilon epsilon} epsilon epsilon a0}";
+    output "s3:{s3:{epsilon epsilon epsilon epsilon} epsilon a0 epsilon}";
+    output "s3:{epsilon a0 epsilon a0}";
+    output "s3:{epsilon a0 a0 epsilon}";
+
+    s   = s3:: "a" s a a a
+        | epsilon:: ()
+    a   = a0:: "a"
+        | epsilon:: ()
+}
+
+testcase "unnamed" {
+    input "aa";
+    output "poo:{poo:{poox poox} poox}";
+    output "poo:{poox poo:{poox poox}}";
+    s   = poo::  s s "a"
+        | poox:: ()
+}
+
+testcase "unnamed" {
+    input "baa";
+    output "s:{aa:{aa:{a b} b}}";
+    s   = s:: "b" a
+    a   = aa:: "a" a b
+        | a:: ()
+    b   = b:: ()
+}
+
+testcase "unnamed" {
+    input "aaab";
+    output "sx:{b aa:{aa:{b b} b}}";
+    s   = sx:: b d "a" "b"
+        | sy:: "a" d "a" d
+    d   = aa:: "a" a b
+    a   = aa:: "a" b b
+        | a::  ()
+    b   = b::  ()
+}
+
+testcase "a+(b*c)" {
+    input "a+(b*c)";
+    output "+:{{a} *:{{b} {c}}}";
+
+    s     = r
+    r     = id
+          | r ^"*" r
+          | r ^"+" r
+          | "(" r ")"
+    id    = "":: [a-z]++
+}
+
+testcase "a+b-d*c" {
+    input "a+b-d*c";
+    output "times:{plus:{stringify:{a} minus:{stringify:{b} stringify:{d}}} stringify:{c}}";
+    output "plus:{stringify:{a} times:{minus:{stringify:{b} stringify:{d}} stringify:{c}}}";
+    output "minus:{plus:{stringify:{a} stringify:{b}} times:{stringify:{d} stringify:{c}}}";
+    output "plus:{stringify:{a} minus:{stringify:{b} times:{stringify:{d} stringify:{c}}}}";
+    output "times:{minus:{plus:{stringify:{a} stringify:{b}} stringify:{d}} stringify:{c}}";
+    w    = " "
+    l    = id
+    s    = assign:: l "=" q
+         | q
+    q    = id
+         | assign:: l "=" q
+         | minus:: q "-" q
+         | plus:: q "+" q
+         | times:: q "*" q
+         | "(" q ")"
+    id     = stringify:: idl++
+    idl    = [a-d]
+}
+
+testcase "priority" {
+    input "a+b*c";
+    output "plus:{stringify:{a} times:{stringify:{b} stringify:{c}}}";
+    w    = " "
+    l    = id
+    s    = assign:: l "=" r
+         | r
+    r    = l
+         | assign:: l "=" r
+         | plus:: r "+" r
+         > times:: r "*" r
+         | "(" r ")"
+         | times:: r r
+    id     = stringify:: idl++
+    idl    = [a-d]
+}
+
+testcase "associativity" {
+    input "a*b*c";
+    output "times:{stringify:{a} times:{stringify:{b} stringify:{c}}}";
+    w    = " "
+    l    = id
+    s    = assign:: l "=" r
+         | r
+    r    = l
+         | assign:: l "=" r
+         | plus:: r "+" r
+         | times:: r "*" (r)
+         | "(" r ")"
+         | times:: r r
+    id     = stringify:: idl++
+    idl    = [a-d]
+}
+
+testcase "unnamed" {
+  input "aa bb";
+  output "{q:{a a} q:{b b}}";
+
+  s    = "":: q */ ws
+  ws   = " "*
+  q    = q:: [a-z]++
+}
+
+testcase "indentation" {
+
+    input "
+
+
+
+ while x>0
+    while y>0
+       foo()
+          bar()
+
+
+ while x>0
+    while y>0
+          foo()
+        bar()
+
+
+
+";
+  output "smt:{while:{>:{{x} {0}} while:{>:{{y} {0}} sbb:{{f o o} {b a r}}}} while:{>:{{x} {0}} sbb:{while:{>:{{y} {0}} {f o o}} {b a r}}}}";
+
+indent    = ww
+outdent   = " "  outdent " "
+          | " "  ("":: (~[])*)  "\n"
+
+w          = " " | "\n" | "\r"
+ws         = "":: w*
+ww         = "":: sp*
+sp         = " "
+any        = "":: (~[])*
+
+s          = smt:: ws! statement ws! statement ws!
+
+block       =        "\n" indent!  blockBody
+           &~        "\n" (" " outdent! " ") ~[\ ]! ("":: ~[]*)!
+
+blockBody   =       statement
+            > sbb:: statement ws blockBody
+
+statement   = call
+            | ^"while" expr block /ws
+
+expr        = ident
+            | call
+            | expr ^">" expr   /ws
+            | num
+
+call        = expr "()"        /ws
+
+num         = "":: [0-9]++
+
+ident       = "":: [a-z]++ &~ keyword
+keyword     = "if" | "then" | "else" | "while"
+
+
+
+}
+
+
+testcase "unnamed" {
+    input "abc                         ";
+
+    s     = s2:: q " "*
+    q     = a3:: [a-z] [a-z] [a-z]
+         &~ ("":: ~[])! "b" ("":: ~[]*)!
+}
+
+testcase "unnamed" {
+    input "abc                         ";
+    output "s:{a b c}";
+
+    s     = s:: [a-z] [a-z] [a-z] " "*
+}
+
+testcase "a+2" {
+
+    input "a+2";
+    output "Plus:{left:{Foo} right:{{2}}}";
+
+    s       = Expr
+    Expr    = "":: [0-9]++
+            | Plus:: (left::Expra) "+" (right::Expr)
+    Expra   = Foo:: ("a" | "b")
+
+}
+
+testcase "unnamed" {
+    input "aaaaa";
+    output "top:{a q a}";
+
+    s = top:: z (q::"a"*) z
+    z = a:: "a"
+}
+
+testcase "dangling else" {
+    input  "if (x) if (y) z else q";
+    output "if:{ident:{x} else:{if:{ident:{y} then:{ident:{z}}} ident:{q}}}";
+
+    s      = Expr
+    Expr   = if::     "if" "(" Expr ")" IfBody     /ws
+           | ident::  [a-z]++
+    IfBody = else::   Expr            "else"  Expr /ws
+           | then::   Expr &~   (("":: (~[])*) "else" Expr! /ws)
+    ws     = "":: [ ]**
+}
+
+
+testcase "unnamed" {
+    input "12111211";
+    output "ac:{{2 1 2 1}}";
+
+    s   = ab:: ab
+        | ac:: ac
+        | bc:: bc
+    ab   = a & b
+    ac   = a & c
+    bc   = b & c
+    a   = "":: ("1" x)*
+    b   = "":: ("b":: x "2")*
+    c   = "":: ("c":: x "2" x "1")*
+    x   = [123]
+}
+
+testcase "follow restrictions on empty string" {
+  input "xxx";
+  s = x:: "x" A "x" C "x"
+  A = B
+  B = "y"
+    | () -> ~"x"
+  C = D -> ~"x"
+  D = ()
+}
+
+testcase "unnamed" {
+  input "axxxxxc";
+  output "q:{a {x x x x x} c}";
+  s  = q:: A ws (B|()) ws C
+  ws = "":: [x]**
+  A  = a:: "a"
+  B  = b:: "b"
+  C  = c:: "c"
+}
+
+testcase "unnamed" {
+  input "aaaaaaaaaaaaaaaaaaaa";
+  output "";
+  s = As & AAs
+  As = () | As "a"
+  AAs = () | AAs "aa"
+}
+
+testcase "question mark" {
+  input "aa aba abba";
+  output "s:{Y Y Z}";
+  s = s:: X " " X " " X
+  X = Y > Z
+  Y = Y:: "a" B? "a"
+  Z = Z:: "a" "b"* "a"
+  B = "b"
+}
+
+testcase "operator: ... " {
+  input "aaabbbaaa abababababa";
+  output "s:{C:{a a a b b b a a a} B:{a b a b a b a b a b a}}";
+  s:: = A " " A
+  A   = B > C
+  B:: = [ab]* &~ (... "bbb" ...)
+  C:: = [ab]*
+}
+
+testcase "operator: ~~" {
+  input "aaabbbaaa abababababa";
+  output "s:{C:{a a a b b b a a a} B:{a b a b a b a b a b a}}";
+  s:: = A " " A
+  A   = B > C
+  B:: = ~~(... "bbb" ...)
+  C:: = [ab]*
+}
+
+testcase "lifts" {
+    input "a+(b*c)";
+    output "+:{a *:{id:{b} c}}";
+
+    s     = r
+    r     = id
+          | r ^"*" `r
+          | `r ^"+" r
+          | "(" r ")"
+    id::  = [a-z]++
+}
+
+testcase "epsilon as a positive conjunct" {
+    input "abababab";
+    s:: = X*
+    X:: = "a" ("b"+ & ())
+}
+
+testcase "ensure sharing of so-called reduction nodes" {
+    input "a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a ";
+    ignore output;
+    s:: = (S!)+
+    S:: = A:: "a "
+        | B:: "a "
+}
+
+testcase "epsilon as a negative conjunct" {
+    input "aaaaa";
+    s:: = X*
+    X:: = "a" ("b"* &~ ())
+}
+
+testcase "long input (reported by David Crawshaw)" {
+    input "0123456789";
+    s:: = X*
+    X:: = "a" ("b"* &~ ())
+}
+
+testcase "a case PEGs cannot handle" {
+    input "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+    s:: = X
+    X:: = "x" X "x" | "x"
+}
+
+testcase "indentation-driven binary tree parsing" {
+  input "
+a
+.g
+..b
+..b
+.q
+";
+  output "block:{interior:{{a} block:{interior:{{g} block:{leaf:{b}} block:{leaf:{b}}}} block:{leaf:{q}}}}";
+
+  s          = block "\n"
+
+  // In the example below, the newline character \n is considered
+  // to be the "first" character of each line (rather than the "last"
+  // character of each line).  This convention is a bit odd, but makes
+  // the example easier to understand.
+
+  // this example uses periods for indentation to make the
+  // examples easier to read; in real life you would use
+  // whitespace
+  indent     = "."**
+
+  // outdent matches any sequence of lines in which the first
+  // line has indentation strictly greater than some subsequent line
+  outdent!   = "." outdent "."
+             | "." ~[.] ~[]* "\n"
+
+  // a block is a properly-indented (that is, non-outdent-matching)
+  // sequence of lines.  It DOES NOT include the trailing newline.
+  block      =  block:: " "* "\n" indent! body
+            &~          " "* "\n" outdent ~[.] ~[]*
+
+  // a body is what's left of a block after you remove the indentation
+  // from the first line
+  body       = leaf
+             | interior
+
+  leaf       = "leaf"::     [a-z0-9]++
+  interior   = "interior":: ("":: [a-z0-9]++) " "* block block
+
+}

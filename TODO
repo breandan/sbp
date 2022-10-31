@@ -1,0 +1,145 @@
+
+- A new alternative (choice) operator that says "the compiler should
+  be able to statically determine that there is no ambiguity here"
+
+- Composable parsers (parser that generate output that is input to
+  future parsers).  Use trees?
+
+_____________________________________________________________________________
+Immediately
+
+  - keywordification (ie globally reject from all productions?
+  - generalized follow-by?)
+
+  - clean up util package
+
+  - currently we GC the doomed stack when the parent dies... but
+    [ideally] we should also GC the parent when the doomed stack dies
+    if it was a positive conjunct.
+
+  - single-tree-return assumption
+     - have a way to let question marks not be tagged?
+     - "flat" sequences (no subtrees contain "::"s?) -- stringifiable
+     - make it so that we can have multi-result nonterminals
+       so long as they always appear under double-colons?
+       auto-insert the unwrap?
+
+  - get rid of Sequence.Singleton if possible
+
+  - use 'a'-'z' or 'a-z' instead of [a-z]?
+  - de-genericize?
+  - foo.add(x)
+    foo.add(y.andnot(x)) ==> this is broken
+      - distinguish Conjunct from Sequence?
+            => !(Conjunct instanceof Reducible)
+  - avoid building the parts of the tree that end up getting dropped
+      - is it worth adding an additional class of states for these?
+         - or perhaps just a runtime node marker (hasNonDroppedParent)
+      - "ambiguity modulo dropped fragments"?
+         - this may conceal highly inefficient grammars...
+  - double-check all the region logic
+  - automatically collect time statistics and display
+
+______________________________________________________________________________
+v1.1
+
+- use regression/least-squares/trend-prof to look for reductions whose
+  behavior is O(n^2)? (ie performed a number of times proportional to
+  the input consumed so far).
+
+- Optimizations:
+    - (x &~ y) => (x & z)
+    - string lookahead
+    - don't form result forests for negated productions
+    - early kills: (a &~ ... b ...) -> once "... b" is seen, "a" is dead
+
+  - MUST HAVE BETTER ERROR MESSAGES
+     - use for developing java15.g
+     - better ambiguity reporting
+        - colorized tree-diffs?
+        - graphviz?
+     - better toString() methods all around...
+
+  - Treewalker code compiler?
+  - detect and reject circular gramars
+  - skeleton generator?
+  - precedes restrictions ("<-")
+  - More topology untangling [later]
+  - grammar highlighting?
+  - Forest needs a "manual access" API (lifting makes this hard)
+  - rewriting language? multiple passes?
+  - write some grammars
+      - Java grammar (java15.g)
+      - TeX (math?)
+      - RFC2822 (email message/headers)
+      - Wikipedia grammar (needs to be both lexerless and boolean)
+
+
+______________________________________________________________________________
+Features
+
+  - try harder to "fuse" states together along two dimensions:
+     - identical (equivalent) states, or states that subsume each other
+     - unnecessary intermediate states ("short cut" GLR)
+
+  - substring parsing 
+      - better error messages
+      - Rekers & Koorn note that this can do really elegant and generalized "autocompletion".
+  - Parameterized LR
+  - "Regular Right Part" grammars (NP Chapman, etc)
+  - Attribute unification
+      - Partly-Linear-PATR? (O(n^6) unification grammar)
+
+  - optional "prefer whitespace higher up" disambiguation heuristic
+
+  - Incremental parse table construction
+
+  - "lazy GLR" and "lazy trees" -> language with first-class CF matching
+      - perhaps linear boolean grammars instead? (linear time, quad space)
+
+  - Followed-by and not-followed-by predicates of arbitrary length
+      - expands the grammar beyond Boolean LR...
+      - requires *very* smart garbage collection
+
+______________________________________________________________________________
+Optimizations
+
+  - understand and implement the RNGLR "kernel state" optimization.
+    The _Practical Early Parsing_ paper may help.
+
+  - implement Johnstone's algorithm for "reduced, resolved LR
+    tables" to eliminate superfluous reductions on
+    epsilon-transitions.
+
+  - Implement a k-token peek buffer (for each state, see if it "dead
+    ends" during the next k Phases based solely on state -- ignoring
+    result SPPF)
+
+  - Is there any way we can avoid creating a GSS.Node instance for
+    nodes which are transient in the sense that they have only one
+    eligible reduction?
+
+  - Re-read Rekers, particularly the stuff on optimal sharing
+
+  - bring back in parse-table phase resolution of precedence (just
+    like associativity).  This can be inferred from the use of ">"
+    when the rules are in one of these special forms:
+
+       E ::=  E     _
+           >  _     E
+
+       E ::=  _     E
+           >  E  _  E
+
+       E ::=  E  _  E
+           >  E  _  E
+
+    where "_" is anything and "E" is the defining nonterminal.
+    Essentially what we're looking for is the situation where the
+    leftmost portion of one rule produces another rule, and the
+    rightmost portion of the latter produces the former.
+
+    I'm not 100% certain that this is as "strong" as the prefer/avoid
+    form (try to prove this, you probably can), but it's "what people
+    intend" most of the time.
+

@@ -1,0 +1,59 @@
+/* Page background color */
+body {
+   background-color: #F0F0E0;
+   font-family: arial, helvetica, sans-serif;
+   font-size: 14px;
+   margin-left: 40px;
+   margin-right: 40px;
+   margin-top: 0px;
+}
+
+p {  }
+
+/* Headings */
+h1 { border-top: 2px solid black; font-size: 14px; }
+h2 { font-size: 20px; width: 100%; margin-left: -40px; margin-right: -40; background-color:blue; padding: 5px; padding-left: 40px; padding-right: 40px; color: white; }
+h3 {  border-top: 2px solid black; font-size: 14px; }
+pre {  }
+hr { width: 0; }
+tt { font-size: 14px; }
+
+div.example {
+  background: black;
+  border: 2px solid gray;
+  color: #ddd;
+  font-family: monospace;
+  padding: 4px;
+  font-size: 14px;
+}
+
+a:link    { color: #00f; text-decoration: none; }
+a:active  { color: #00f; text-decoration: none; border: 1px blue; }
+a:visited { color: #44f; text-decoration: none; }
+a:hover   { color: #00f; text-decoration: none; border-bottom: dotted 1px blue; }
+
+/* Table colors */
+.TableHeadingColor     { background: #CCCCFF; border: 0px white; } /* Dark mauve */
+.TableSubHeadingColor  { background: #EEEEFF; border: 0px white; } /* Light mauve */
+.TableRowColor         { background: #FFFFFF; font-size: 14px; } /* White */
+
+table { border: 1px black solid;  }
+td    { border: 0px white; border-top: 1px dotted gray; font-size: 14px; }
+th    { border: 0px white; }
+
+
+
+
+/* Font used in left-hand frame lists */
+.FrameTitleFont   { font-size: 100%; font-family: Helvetica, Arial, sans-serif }
+.FrameHeadingFont { font-size:  90%; font-family: Helvetica, Arial, sans-serif }
+.FrameItemFont    { font-size:  90%; font-family: Helvetica, Arial, sans-serif }
+
+/* Navigation bar fonts and colors */
+.NavBarCell1    { background-color:#EEEEFF;} /* Light mauve */
+.NavBarCell1Rev { background-color:#00008B;} /* Dark Blue */
+.NavBarFont1    { font-family: Arial, Helvetica, sans-serif; color:#000000;}
+.NavBarFont1Rev { font-family: Arial, Helvetica, sans-serif; color:#FFFFFF;}
+
+.NavBarCell2    { font-family: Arial, Helvetica, sans-serif; background-color:#FFFFFF;}
+.NavBarCell3    { font-family: Arial, Helvetica, sans-serif; background-color:#FFFFFF;}

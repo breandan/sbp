@@ -1,0 +1,21 @@
+// circular test cases
+//testcase {
+//    input  "x";
+//    output "a:{x}";
+//
+//    s   = a1:: a
+//    a   = s1:: s
+//    a   = ^"x"
+//}
+//
+//testcase {
+//    input  "x";
+//    output "x";
+//    output "s2:{s2:{s0 s0} x}";
+//    output "s2:{s0 x}";
+//
+//
+//    s   = s2:: s s
+//    s   = ^"x"
+//    s   = s0:: ()
+//}

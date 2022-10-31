@@ -1,0 +1,112 @@
+______________________________________________________________________________
+Definitions
+
+  Token    -- an indivisible datum.  Most things in SBP are parameterized
+              over a token type.
+ 
+  Tree     -- a tree of Tokens; each node consists of a Token (called the
+              node's "head") and zero or more children (which are in
+              turn Trees).  To use a Haskell-like notation,
+ 
+                data Tree a = Tree a [Tree]
+ 
+              Note that (1) this is not the algebraic type most
+              commonly used for trees and (2) this model of trees is
+              not simply specific to the data structures used to
+              implement SBP -- the parser assumes that everything it
+              deals with is a Token, Tree, or Forest (see below).
+ 
+  Forest   -- a set of trees.  There is an implicit assumption here that
+              a Forest can be represented efficiently when its
+              constituent trees share supertrees and subtrees.
+ 
+              SBP does not yet commit to a specific model of Forests,
+              and the API exposes little more than the ability to expand
+              a Forest into a set of Trees.  This may change.
+ 
+              One key issue to resolve is how to efficiently represent
+              trees with a huge number of children where only a subset
+              of these children are shared (this effectively requires a
+              Tomita-style SPPF just for the child-list).  Currently
+              this issue is sidestepped by the fact that the "raw" parse
+              forest will never have a tree of arity greater than the
+              longest production rule (and therefore not unreasonably
+              long); the "unfolding" transformation used to create
+              arrays out of EBNF-repetition productions takes place
+              during the Forest-to-TreeSet expansion.  Clearly this is
+              not an ideal long-term solution.
+ 
+  Element  -- a pattern which:
+ 
+                 1. matches a sequence of zero or more Trees
+                 2. uses the matched Trees to create a sequence of output Forests
+ 
+              The restriction that the result of an Element can only be
+              zero or one Trees (rather than zero or more) is one which
+              we hope to lift soon.
+ 
+  Atom     -- an Element which matches exactly one Token.  An Atom is
+              effectively a (possibly infinite) set of Tokens; matching
+              is a membership-test.
+
+  Sequence -- an Element which matches the juxtaposition of zero or
+              more sub-Elements, and which creates its output Tree by
+              composing the output Trees of those sub-Elements.
+
+     Position -- within a specific Sequence, a Position is the
+                 imaginary space before or after one of the elements
+                 (ie at the beginning of the sequence, at the end, or
+                 between two elements).  Positions correspond exactly
+                 to the automata-theoretic notion of an LR "item", but
+                 "item" is such a horribly chosen and vague name that
+                 I just couldn't bring myself to perpetuate it.  Note
+                 that Positions and Locations have no relationship to
+                 each other.
+
+  Union    -- an Element which matches exactly one of a set of one or
+              more sub-Elements; its output forest is union
+
+  Location -- a specific location in the input tree.  This notion
+              still needs to be formalized; for example, not all
+              nodes in the output Forest have a sensible notion of
+              Location.
+
+
+______________________________________________________________________________
+Tree Notation
+
+The following notation is used for Tree<String> (Trees of Strings); it
+can be generalized to Tree<X> where X maps onto Strings (ie
+Tree<Number>, etc).
+
+  Tree   ::= Head                   // equivalent to Head:{}
+           |          "{" Body "}"  // equivalent to "":{}
+           | Head ":" "{" Body "}"
+           | Head ":" (Tree)        // ":" is right-associative
+
+  Head   ::= "\"\""                 // the empty string
+           | "\"" [~\"]+ "\""       // Strings containing spaces, braces, quotes, or colons
+           | [~\":{}\r\n\ ]+        // non-empty strings of "normal" characters
+
+  Body   ::= Tree */ (" "+)         // zero or more Trees separated by whitespace
+
+Example:
+
+  a:{b {e f:g:h} g}
+
+        "a"
+      /  |  \
+    "b"  ""  "g"
+         |
+        "f"
+         |
+        "g"
+         |
+        "h"
+
+______________________________________________________________________________
+Forest Notation
+
+This has not yet been finalized
+
+

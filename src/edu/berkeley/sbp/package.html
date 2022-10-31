@@ -1,0 +1,248 @@
+<body>
+<p style="border: 1px red solid; width: 50%; padding: 10px; background-color: white; margin-left: auto; margin-right: auto">
+
+   The public APIs in this package are <b>stable</b>; package-private
+   APIs and all other packages are subject to change in future
+   releases.<br><br>Be sure to read <a
+   href=../../../../jargon.txt>doc/jargon.txt</a> and the <a
+   href=#package_description>description</a> below; there is also a
+   <a href=#faq>faq</a> a the end of this document.
+
+</p>
+
+<p>
+This package forms the stable core of the SBP API  Classes fall into
+five categories:
+
+<ul> <li> <font color=green>Elements of the grammar</font> -- the
+          pieces from which a grammar is composed.
+
+     <li> <font color=purple>Input, Location, and Region</font> -- the
+          input to be parsed, as well as classes for describing
+          locations and regions of that input.
+
+     <li> Parser -- the engine that actually performs the parsing
+          process.
+
+     <li> <font color=blue>Trees and Forests</font> -- used to
+          represent the output of the parsing process.
+
+     <li> Exceptions.
+</ul>
+</p>
+
+<h2>Theory of Operation</h2>
+
+<p>
+
+The input that you parse is considered to be a stream of
+<tt>Tokens</tt>; this stream is represented by an
+<tt>Input&lt;Token&gt;</tt>.  In order to create this <tt>Input</tt>,
+you must first decide what kind of tokens you want to parse.  Based on
+this decision, you should then implement subclasses of <tt>Input</tt>,
+<tt>Parser</tt>, and <tt>Atom</tt> for that token type.  If you are
+parsing characters (which you usually are), these subclasses are
+provided in the <tt>edu.berkeley.sbp.chr.*</tt> package so you don't
+have to write them yourself.
+
+</p><p>
+
+You then create a grammar by instantiating objects belonging to your
+subclass of <tt>Atom</tt> and forming them into sequences using
+<tt>Sequence.create___()</tt> and <tt>new Union()</tt>.
+
+</p><p>
+
+Ultimately you will wind up with an instance of <tt>Union</tt>
+corresponding to the "start nonterminal" of your grammar.  You can
+then provide this <tt>Union</tt> to the constructor of your
+<tt>Parser</tt> subclass and invoke the <tt>Parser.parse(Input)</tt>
+method on the <tt>Input</tt> to be parsed.
+
+</p><p>
+
+The result will be a <tt>Forest</tt>, which is an efficient
+representation of a set of one or more trees that may share subtrees.
+
+</p><p>
+
+If the parse was ambiguous, you can use
+<tt>Forest.expand(HashSet)</tt> to expand the Forest into all the
+possible trees (there is not yet a stable API for inspecting the
+<tt>Forest</tt> directly).
+
+</p><p>
+
+If the parse was <i>not</i> ambiguous, you can call
+<tt>Forest.expand1()</tt> to return the single possible parsing as a
+<tt>Tree</tt>.  You would then typically use the methods of the
+<tt>Tree</tt> class to examine the parse tree.
+
+</p>
+          
+<a name=example></a>
+<h2>Guide to the API</h2>
+          
+<h2>Example</h2>
+
+<div class=example>
+<font color=cyan>package</font>&nbsp;<font color=#f0f>edu.berkeley.sbp.misc</font>;<br>
+<br>
+<font color=cyan>import</font>&nbsp;<font color=#f0f>edu.berkeley.sbp.*</font>;<br>
+<br>
+<font color=cyan>public</font>&nbsp;<font color=cyan>class</font>&nbsp;Demo2&nbsp;{<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color=cyan>private</font>&nbsp;<font color=cyan>static</font>&nbsp;<font color=orange>Atom</font>&nbsp;<font color=#00f>atom</font>(<font color=orange>char</font>&nbsp;<font color=yellow>c</font>)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=cyan>return</font>&nbsp;<font color=cyan>new</font>&nbsp;edu.berkeley.sbp.chr.<font color=orange>CharAtom</font>(c);&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color=cyan>private</font>&nbsp;<font color=cyan>static</font>&nbsp;<font color=orange>Atom</font>&nbsp;<font color=#00f>atom</font>(<font color=orange>char</font>&nbsp;<font color=yellow>c1</font>,&nbsp;<font color=orange>char</font>&nbsp;<font color=yellow>c2</font>)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=cyan>return</font>&nbsp;<font color=cyan>new</font>&nbsp;edu.berkeley.sbp.chr.<font color=orange>CharAtom</font>(c1,&nbsp;c2);&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color=cyan>public</font>&nbsp;<font color=cyan>static</font>&nbsp;<font color=cyan>void</font>&nbsp;<font color=#00f>main</font>(<font color=orange>String[]</font>&nbsp;s)&nbsp;throws&nbsp;Exception&nbsp;{<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=orange>Union</font>&nbsp;<font color=yellow>expr</font>&nbsp;=&nbsp;<font color=cyan>new</font>&nbsp;<font color=orange>Union</font>(<font color=#0f0>"Expr"</font>);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=orange>Element[]</font>&nbsp;<font color=yellow>add</font>&nbsp;&nbsp;<font color=yellow></font>&nbsp;=&nbsp;<font color=cyan>new</font>&nbsp;<font color=orange>Element</font>[]&nbsp;{&nbsp;expr,&nbsp;atom(<font color=#0f0>'+'</font>),&nbsp;expr&nbsp;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=orange>Element[]</font>&nbsp;<font color=yellow>mult</font>&nbsp;<font color=yellow></font>&nbsp;=&nbsp;<font color=cyan>new</font>&nbsp;<font color=orange>Element</font>[]&nbsp;{&nbsp;expr,&nbsp;atom(<font color=#0f0>'*'</font>),&nbsp;expr&nbsp;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=orange>Element[]</font>&nbsp;<font color=yellow>paren</font>&nbsp;=&nbsp;<font color=cyan>new</font>&nbsp;<font color=orange>Element</font>[]&nbsp;{&nbsp;atom(<font color=#0f0>'('</font>),&nbsp;expr,&nbsp;atom(<font color=#0f0>')'</font>)&nbsp;};<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=orange>Sequence</font>&nbsp;<font color=yellow>addSequence</font>&nbsp;=&nbsp;<font color=orange>Sequence</font>.create(<font color=#0f0>"add"</font>,&nbsp;add,&nbsp;<font color=#f0f>null</font>,&nbsp;<font color=#f0f>false</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=orange>Sequence</font>&nbsp;<font color=yellow>multSequence</font>&nbsp;=&nbsp;<font color=orange>Sequence</font>.create(<font color=#0f0>"mult"</font>,&nbsp;mult,&nbsp;<font color=#f0f>null</font>,&nbsp;<font color=#f0f>false</font>);<br>
+<br>
+<font color=red>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;uncomment&nbsp;this&nbsp;line&nbsp;to&nbsp;disambiguate<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//multSequence&nbsp;=&nbsp;multSequence.andnot(Sequence.create("add",&nbsp;add,&nbsp;null,&nbsp;false));<br>
+</font>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expr.add(<font color=orange>Sequence</font>.create(paren,&nbsp;1));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expr.add(addSequence);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expr.add(multSequence);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expr.add(<font color=orange>Sequence</font>.create(atom(<font color=#0f0>'0'</font>,&nbsp;<font color=#0f0>'9'</font>)));<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=orange>String</font>&nbsp;<font color=yellow>input</font>&nbsp;=&nbsp;<font color=#0f0>"8+(1+3)*7"</font>;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;System.out.println(<font color=#0f0>"input:&nbsp;&nbsp;\""+input+"\""</font>);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=orange>StringBuffer</font>&nbsp;<font color=yellow>sb</font>&nbsp;=&nbsp;<font color=cyan>new</font>&nbsp;<font color=orange>StringBuffer</font>();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expr.toString(sb);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;System.out.println(<font color=#0f0>"grammar:&nbsp;\n"</font>+sb);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=orange>Forest</font>&nbsp;<font color=yellow>f</font>&nbsp;=&nbsp;<font color=cyan>new</font>&nbsp;edu.berkeley.sbp.chr.<font color=orange>CharParser</font>(expr).parse(input);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;System.out.println(<font color=#0f0>"output:&nbsp;"</font>+f.expand1().toPrettyString());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+}<br>
+</div>
+
+<p>
+Executing this code gives the following:
+</p>
+
+<div class=example>
+java&nbsp;-Xmx900m&nbsp;-cp&nbsp;edu.berkeley.sbp.jar&nbsp;edu.berkeley.sbp.misc.Demo2<br>
+input:&nbsp;&nbsp;"8+(1+3)*7"<br>
+grammar:<br>
+Expr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;[(]&nbsp;Expr&nbsp;[)]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;"add"::&nbsp;Expr&nbsp;[+]&nbsp;Expr<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;"mult"::&nbsp;Expr&nbsp;[*]&nbsp;Expr<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;[0-9]<br>
+<br>
+Exception&nbsp;in&nbsp;thread&nbsp;"main"&nbsp;unresolved&nbsp;ambiguity;&nbsp;shared&nbsp;subtrees&nbsp;are&nbsp;shown&nbsp;as&nbsp;"*"<br>
+&nbsp;&nbsp;possibility:&nbsp;mult:{add:{*&nbsp;*&nbsp;*}&nbsp;*&nbsp;*}<br>
+&nbsp;&nbsp;possibility:&nbsp;add:{*&nbsp;*&nbsp;mult:{*&nbsp;*&nbsp;*}}<br>
+</div>
+
+<p>
+If we uncomment the line in the example, the result is:
+</p>
+
+<div class=example>
+java&nbsp;-Xmx900m&nbsp;-cp&nbsp;edu.berkeley.sbp.jar&nbsp;edu.berkeley.sbp.misc.Demo2<br>
+input:&nbsp;&nbsp;"8+(1+3)*7"<br>
+grammar:&nbsp;<br>
+Expr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;[(]&nbsp;Expr&nbsp;[)]&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;"add"::&nbsp;Expr&nbsp;[+]&nbsp;Expr&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;"mult"::&nbsp;Expr&nbsp;[*]&nbsp;Expr&nbsp;&~&nbsp;"add"::&nbsp;Expr&nbsp;[+]&nbsp;Expr&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;[0-9]&nbsp;<br>
+<br>
+output:&nbsp;add:{8&nbsp;+&nbsp;mult:{add:{1&nbsp;+&nbsp;3}&nbsp;*&nbsp;7}}<br>
+</div>
+
+<a name=faq></a>
+<h2>FAQs</h2>
+
+<hr>
+<p>
+<b>I get the error <tt>java.lang.Error: multiple non-dropped elements
+   in sequence</tt>, what does this mean?</b>
+</p>
+
+<p>
+<font color=red><b>Note</b></font>: this question deals with the
+package <tt>edu.berkeley.sbp.<b>meta</b></tt>, which is not considered
+stable.
+</p>
+
+<p>
+When using the class <tt>edu.berkeley.sbp.meta.Grammar</tt>, you must
+supply an instance of <tt>Grammar.Bindings</tt>; this instance tells
+SBP how to create a parse tree for an expression using the parse trees
+of its subexpressions.
+</p>
+
+<p>
+SBP has no trouble determining what to do when parsing an expression
+that drops all of its subexpressions, or all but one -- for example:
+</p>
+
+<div class=example>
+A = B! C D! E!
+</div>
+
+<p>
+... in this example, only <tt>C</tt> is "non-dropped".  In this case,
+the result of parsing <tt>A</tt> is simply the result of parsing
+<tt>C</tt>.
+</p>
+
+<p>
+However, if we were to leave more than one element un-dropped, SBP
+needs to know how to form a single tree out of the two non-dropped
+subtrees.  There are two ways to do this.  The simplest is to provide
+a tag -- a string which becomes the common parent of the two subtrees:
+</p>
+
+<div class=example>
+Expr = <b>Mult::</b>  Expr "*" Expr
+</div>
+
+<p>
+If you are using <tt>AnnotationGrammarBindings</tt>, you can also deal
+with this situation by declaring a method/inner-class whose name
+matches the nonterminal (<tt>Expr</tt>) and has appropriate
+annotations.  This is fairly advanced stuff, and the code it uses
+isn't quite as mature as the rest of the code.
+</p>
+
+
+<h2>Reporting Bugs</h2>
+
+<p>
+
+Bug reports are especially appreciated when you submit them as a test
+case (here's the
+<a href=../../../../../tests/testcase.g>grammar</a> and some
+<a href=../../../../../tests/regression.tc>examples</a>).
+
+This way we can add your bug report as part of the regression suite,
+and be sure we never release a new version in which the bug has crept
+back in!
+
+</p>
+
+<p>
+For now, please send bug reports to <a
+href=http://research.cs.berkeley.edu/project/sbp/list/>the mailing
+list</a>.
+</p>
+
+</body>
